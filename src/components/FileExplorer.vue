@@ -2,9 +2,9 @@
   <section class='container'>
     <div class='row'>
       <div class='col-md-12'>
+        <caption>{{ path }}</caption>
         <table class='table small table-striped'
                v-if='doesGithubHaveFiles'>
-          <caption>{{ path }}</caption>
           <thead class='thead-light'>
             <tr>
               <th>Name</th>
@@ -93,17 +93,30 @@
         let allFiles = [];
 
         this.$http.get(githubUrl).then(response => {
-          this.files = response.body;
+          this.files = this.sortGithubFiles(response.body);
         }, response => {
           this.alertMessage = response.body.message;
         });
       },
+      sortGithubFiles(files) {
+        return files.slice(0).sort(function (a, b) {
+          // 1. Sort by Type i.e directory first then files
+          // 2. Sort by name within directory and files
+          if (a.type !== b.type) {
+             return (a.type === 'dir') ? -1 : 1;
+           } else {
+             return (a.name < b.name) ? -1 : 1;
+           }
+        });
+      },
       goOneDirectoryUp() {
-        debugger
-        console.log(this.path);
+        let splittedPath = this.path.split('/');
+        let splittedArray = splittedPath.splice(0, splittedPath.length - 1)
+        this.path = (splittedArray.length > 1 ) ? splittedArray.join('/') : '/';
+        this.getGithubFiles();
       },
       goInsideFile(path) {
-        this.path = path;
+        this.path = '/' + path;
         this.getGithubFiles();
       },
       isFileTypeFile(file) {
