@@ -2,10 +2,17 @@
   <section class='container'>
     <div class='row'>
       <div class='col-md-12'>
-        <nav aria-label="breadcrumb" role="navigation">
+        <nav aria-label="breadcrumb" role="navigation" class="custom-breadcrumbs">
           <ol class="breadcrumb">
-            <li class="breadcrumb-item" v-for="(crumb, key) in fetchPathBreadCrumbs()">
-              <a href="#">{{ key }} : {{ crumb }}</a>
+            <li class="breadcrumb-item"
+                v-for="(crumb, key) in fetchPathBreadCrumbs()"
+                v-bind:key="key"
+                v-bind:class="isActive(key)"
+                v-bind:aria-current="currentPage(key)">
+              <a class='custom-breadcrumbs--links'
+                 v-on:click="traveseDirectoryUpwards(key)">
+                 {{ crumb }}
+               </a>
             </li>
           </ol>
         </nav>
@@ -20,7 +27,7 @@
               <th>Name</th>
               <th class='text-right'>
                 <button class='btn btn-primary btn-xs'
-                        @click='goOneDirectoryUp()'
+                        @click='traveseDirectoryUpwards()'
                         v-if='isNotRoot'>Go Back</button>
               </th>
             </tr>
@@ -87,14 +94,14 @@
       fullRepoUrl() {
         return this.username + '/' + this.repo;
       },
-      isNotRoot() {
-        return this.path !== '/';
-      },
       doesGithubHaveFiles() {
         return this.files.length > 0;
       },
     },
     methods: {
+      isNotRoot() {
+        return this.path !== '/';
+      },
       getGithubFiles() {
         const githubUrl = 'https://api.github.com/repos/' +
                           this.fullRepoUrl +
@@ -119,11 +126,31 @@
            }
         });
       },
-      goOneDirectoryUp() {
-        let splittedPath = this.path.split('/');
-        let length = splittedPath.length;
-        let splittedArray = splittedPath.splice(0, length - 1)
-        this.path = (splittedArray.length > 1 ) ? splittedArray.join('/') : '/';
+      traveseDirectoryUpwards(key) {
+        if (this.isNotRoot() && key != 0) {
+          var splittedArray = this.splitPathIntoArray();
+          var arrayLength = splittedArray.length;
+
+          let deleteStartPosition;
+
+          if (typeof key === typeof undefined) {
+            deleteStartPosition = arrayLength - 1;
+          } else {
+            deleteStartPosition = key + 1;
+          }
+
+          let deleteCount = arrayLength - deleteStartPosition;
+          splittedArray.splice(deleteStartPosition, deleteCount)
+
+          if (splittedArray.length > 1) {
+            this.path = splittedArray.join('/');
+          } else {
+            this.path = '/';
+          }
+        } else {
+          this.path = '/';
+        }
+
         this.getGithubFiles();
       },
       goInsideFile(path) {
@@ -140,7 +167,7 @@
         let breadCrumbs = ['root'];
 
         if (this.path !== '/') {
-          let splittedArray = this.path.split('/');
+          let splittedArray = this.splitPathIntoArray();
           splittedArray.splice(0, 1);
 
           if (splittedArray.length > 0) {
@@ -149,6 +176,27 @@
         }
         return breadCrumbs;
       },
+      splitPathIntoArray() {
+        return this.path.split('/');
+      },
+      isActive(key) {
+        return this.checkStatus(key, 'active');
+      },
+      checkStatus(key, statusClass) {
+        if (this.isNotRoot()) {
+          const pathLengthWithSpaces = this.splitPathIntoArray();
+          // - 2 because of extra space that is added
+          // at top of path.
+          if (key !== (pathLengthWithSpaces.length - 1)) {
+            statusClass = '';
+          }
+        }
+
+        return statusClass;
+      },
+      currentPage(key) {
+        return this.checkStatus(key, 'page');
+      }
     },
     created() {
       if (this.username && this.repo) this.getGithubFiles();
@@ -162,5 +210,7 @@
 </script>
 
 <style scoped="">
-
+  .custom-breadcrumbs .breadcrumb-item.not(.active) .custom-breadcrumbs--links {
+    color: #007BE9;
+  }
 </style>
