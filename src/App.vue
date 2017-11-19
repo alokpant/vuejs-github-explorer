@@ -15,7 +15,13 @@
           </p>
         </div>
         <div class="col-sm-8 mx-auto">
-          <SearchComponent />
+          <SearchComponent v-on:form-submitted="fetchGithubFiles"></SearchComponent>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="col-sm-8 mx-auto">
+          <FileExplorer :username="username" :repo="repoName"></FileExplorer>
         </div>
       </div>
     </main>
@@ -23,17 +29,36 @@
 </template>
 
 <script>
-import SearchComponent from './components/Search';
+  import SearchComponent from './components/Search';
+  import FileExplorer from './components/FileExplorer';
 
-export default {
-  name: 'app',
-  components: {
-    SearchComponent,
-  },
-};
+  export default {
+    name: 'app',
+    data() {
+      return {
+        fullRepoName: '',
+        username: '',
+        repoName: '',
+      };
+    },
+    components: {
+      SearchComponent,
+      FileExplorer,
+    },
+    methods: {
+      fetchGithubFiles(fullRepoName) {
+        const splitData = fullRepoName.split('/');
+        this.fullRepoName = fullRepoName;
+        this.username = splitData[0];
+        this.repoName = splitData[1];
+        // console.group('Repository Information');
+        // console.log('Repository Full Path: ' + this.fullRepoName);
+        // console.log('Username: ' + this.username);
+        // console.log('Repository Name: ' + this.repoName);
+        // console.groupEnd('Repository Information');
+      },
+    },
+  };
 </script>
 
-<style>
-  @import "bootstrap";
-
-</style>
+<style> @import "bootstrap"; </style>
