@@ -1,6 +1,6 @@
 <template>
   <section class='container'>
-    <div class='row'>
+    <div class='row' v-if='doesGithubHaveFiles'>
       <div class='col-md-12'>
         <nav aria-label="breadcrumb" role="navigation" class="custom-breadcrumbs">
           <ol class="breadcrumb">
