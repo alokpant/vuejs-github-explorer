@@ -2,7 +2,17 @@
   <section class='container'>
     <div class='row'>
       <div class='col-md-12'>
-        <caption>{{ path }}</caption>
+        <nav aria-label="breadcrumb" role="navigation">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item" v-for="(crumb, key) in fetchPathBreadCrumbs()">
+              <a href="#">{{ key }} : {{ crumb }}</a>
+            </li>
+          </ol>
+        </nav>
+      </div>
+    </div>
+    <div class='row'>
+      <div class='col-md-12'>
         <table class='table small table-striped'
                v-if='doesGithubHaveFiles'>
           <thead class='thead-light'>
@@ -111,7 +121,8 @@
       },
       goOneDirectoryUp() {
         let splittedPath = this.path.split('/');
-        let splittedArray = splittedPath.splice(0, splittedPath.length - 1)
+        let length = splittedPath.length;
+        let splittedArray = splittedPath.splice(0, length - 1)
         this.path = (splittedArray.length > 1 ) ? splittedArray.join('/') : '/';
         this.getGithubFiles();
       },
@@ -124,6 +135,19 @@
       },
       isFileTypeDirectory(file) {
         return file.type === 'dir';
+      },
+      fetchPathBreadCrumbs () {
+        let breadCrumbs = ['root'];
+
+        if (this.path !== '/') {
+          let splittedArray = this.path.split('/');
+          splittedArray.splice(0, 1);
+
+          if (splittedArray.length > 0) {
+            breadCrumbs = breadCrumbs.concat(splittedArray);
+          }
+        }
+        return breadCrumbs;
       },
     },
     created() {
